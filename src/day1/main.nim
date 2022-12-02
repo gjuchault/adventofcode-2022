@@ -1,15 +1,12 @@
 import std/strutils
 import std/strformat
-import std/sequtils
 import std/heapqueue
 
 type Elf* = object
-  calories: seq[uint]
-
-proc sumElfCalories(calories: seq[uint]): uint = foldl(calories, a + b, cast[uint](0))
+  caloriesSum: uint
 
 proc `<`(leftElf, rightElf: ref Elf): bool = 
-  return sumElfCalories(leftElf.calories) < sumElfCalories(rightElf.calories)
+  return leftElf.caloriesSum < rightElf.caloriesSum
 
 proc part1(elves: seq[ref Elf]): uint =
   if (elves.len == 0):
@@ -21,7 +18,7 @@ proc part1(elves: seq[ref Elf]): uint =
     if topElfByCalorie < elf:
       topElfByCalorie = elf
   
-  return sumElfCalories(topElfByCalorie.calories)
+  return topElfByCalorie.caloriesSum
 
 proc part2(elves: seq[ref Elf]): uint =
   if (elves.len == 0):
@@ -44,7 +41,7 @@ proc part2(elves: seq[ref Elf]): uint =
   var sum: uint = 0
 
   for index in 0 .. top3Elves.len - 1:
-    sum += sumElfCalories(top3Elves[index].calories)
+    sum += top3Elves[index].caloriesSum
 
   return sum
 
@@ -55,10 +52,11 @@ proc day1(): void =
 
   for rawElf in split(entireFile, "\n\n"):
     var elf: ref Elf = new(Elf)
+    elf.caloriesSum = 0
 
-    for rawCalorie in split(rawElf, "\n"):
-      let calorie = parseUInt(rawCalorie)
-      elf.calories.add(calorie)
+    for rawCalories in split(rawElf, "\n"):
+      let calories = parseUInt(rawCalories)
+      elf.caloriesSum += calories
   
     elves.add(elf)
 
