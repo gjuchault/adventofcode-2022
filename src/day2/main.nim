@@ -1,14 +1,7 @@
 import std/strutils
 import std/strformat
 import tables
-
-type Action = enum
-  Rock, Paper, Scissors
-
-type GameResult = enum
-  Win, Draw, Loose
-
-type GameLine = tuple[opponent: Action, player: Action]
+import game
 
 const leftActionMap = {
   "A": Action.Rock,
@@ -16,50 +9,34 @@ const leftActionMap = {
   "C": Action.Scissors
 }.toTable
 
-const rightActionMap = {
+const rightActionPart1Map = {
   "X": Action.Rock,
   "Y": Action.Paper,
   "Z": Action.Scissors
 }.toTable
 
-const scoreByAction = {
-  Action.Rock: cast[uint](1),
-  Action.Paper: cast[uint](2),
-  Action.Scissors: cast[uint](3),
+const rightActionPart2Map = {
+  "X": GameResult.Loose,
+  "Y": GameResult.Draw,
+  "Z": GameResult.Win
 }.toTable
-
-const scoreByGameResult = {
-  GameResult.Win: cast[uint](6),
-  GameResult.Draw: cast[uint](3),
-  GameResult.Loose: cast[uint](0),
-}.toTable
-
-proc processGame(game: GameLine): GameResult =
-  if (game.opponent == game.player):
-    return GameResult.Draw
-
-  if (game.player == Action.Rock and game.opponent == Action.Paper):
-    return GameResult.Loose
-
-  if (game.player == Action.Paper and game.opponent == Action.Scissors):
-    return GameResult.Loose
-
-  if (game.player == Action.Scissors and game.opponent == Action.Rock):
-    return GameResult.Loose
-
-  return GameResult.Win
 
 proc part1(games: seq[GameLine]): uint =
   var score: uint = 0
 
   for gameLine in games:
-    let gameResult = processGame(gameLine)
-    score += scoreByAction[gameLine.player] + scoreByGameResult[gameResult]
+    score += computeScore(gameLine.part1Player, gameLine.opponent)
 
   return score
 
-proc part2(): uint =
-  return 2
+proc part2(games: seq[GameLine]): uint =
+  var score: uint = 0
+
+  for gameLine in games:
+    let action = processWhatToPlay(gameLine)
+    score += computeScore(action, gameLine.opponent)
+
+  return score
 
 proc day2(): void = 
   let entireFile = readFile("./build/input.txt")
@@ -72,12 +49,13 @@ proc day2(): void =
 
     var strategyGuideLine: GameLine = (
       leftActionMap[rawLeftAction],
-      rightActionMap[rawRightAction],
+      rightActionPart1Map[rawRightAction],
+      rightActionPart2Map[rawRightAction]
     )
 
     games.add(strategyGuideLine)
 
   echo fmt"Part 1: {part1(games)}"
-  echo fmt"Part 2: {part2()}"
+  echo fmt"Part 2: {part2(games)}"
 
 day2()
