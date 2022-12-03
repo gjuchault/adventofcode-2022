@@ -21,15 +21,15 @@ const actionLooseByAction = {
 }.toTable
 
 const scoreByAction* = {
-  Action.Rock: cast[uint](1),
-  Action.Paper: cast[uint](2),
-  Action.Scissors: cast[uint](3),
+  Action.Rock: uint(1),
+  Action.Paper: uint(2),
+  Action.Scissors: uint(3),
 }.toTable
 
 const scoreByGameResult* = {
-  GameResult.Win: cast[uint](6),
-  GameResult.Draw: cast[uint](3),
-  GameResult.Loose: cast[uint](0),
+  GameResult.Win: uint(6),
+  GameResult.Draw: uint(3),
+  GameResult.Loose: uint(0),
 }.toTable
 
 proc processGame*(player: Action, opponent: Action): GameResult =
