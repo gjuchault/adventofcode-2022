@@ -20,8 +20,23 @@ proc part1(rucksacks: seq[ref Rucksack]): uint =
 
   return uint(score)
 
-proc part2(): uint =
-  return 2
+proc part2(rucksacks: seq[ref Rucksack]): uint =
+  var score = 0
+
+  if rucksacks.len mod 3 != 0:
+    echo "Invalid input: elves can't be split in groups of 3"
+    system.quit(1)
+
+  for i in countup(0, rucksacks.len - 1, 3):
+    let firstCompleteRucksack = rucksacks[i].firstCompartiment + rucksacks[i].secondCompartiment
+    let secondCompleteRucksack = rucksacks[i + 1].firstCompartiment + rucksacks[i + 1].secondCompartiment
+    let thirdCompleteRucksack = rucksacks[i + 2].firstCompartiment + rucksacks[i + 2].secondCompartiment
+
+    let intersection = firstCompleteRucksack * secondCompleteRucksack * thirdCompleteRucksack
+    
+    score += toSeq(intersection)[0]
+
+  return uint(score)
 
 proc letterToPriority(letter: char): int =
   let asciiCode = int(letter)
@@ -54,6 +69,6 @@ proc dayX(): void =
     rucksacks.add(rucksack)
 
   echo fmt"⭐️ Part 1: {part1(rucksacks)}"
-  echo fmt"⭐️ Part 2: {part2()}"
+  echo fmt"⭐️ Part 2: {part2(rucksacks)}"
 
 dayX()
