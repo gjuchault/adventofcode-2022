@@ -55,7 +55,7 @@ proc day2(): void =
 
     games.add(strategyGuideLine)
 
-  echo fmt"Part 1: {part1(games)}"
-  echo fmt"Part 2: {part2(games)}"
+  echo fmt"⭐️ Part 1: {part1(games)}"
+  echo fmt"⭐️ Part 2: {part2(games)}"
 
 day2()

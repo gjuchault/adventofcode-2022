@@ -60,7 +60,7 @@ proc day1(): void =
   
     elves.add(elf)
 
-  echo fmt"Part 1: {part1(elves)}"
-  echo fmt"Part 2: {part2(elves)}"
+  echo fmt"⭐️ Part 1: {part1(elves)}"
+  echo fmt"⭐️ Part 2: {part2(elves)}"
 
 day1()
