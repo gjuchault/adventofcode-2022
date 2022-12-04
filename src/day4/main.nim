@@ -7,7 +7,7 @@ type IdRange = object
 
 type Pair = tuple[left: ref IdRange, right: ref IdRange]
 
-proc rangeContains(left: ref IdRange, right: ref IdRange): bool =
+proc rangeFullyContains(left: ref IdRange, right: ref IdRange): bool =
   let leftContainsRight = left.rangeStart <= right.rangeStart and
     left.rangeEnd >= right.rangeEnd
 
@@ -16,16 +16,30 @@ proc rangeContains(left: ref IdRange, right: ref IdRange): bool =
 
   return leftContainsRight or rightContainsLeft
 
+proc rangePartiallyContains(left: ref IdRange, right: ref IdRange): bool =
+  let leftContainsRight = left.rangeStart <= right.rangeStart and
+    left.rangeEnd >= right.rangeStart
+
+  let rightContainsLeft = right.rangeStart <= left.rangeStart and
+    right.rangeEnd >= left.rangeStart
+
+  return leftContainsRight or rightContainsLeft
+
 proc part1(pairs: seq[ref Pair]): uint =
   var score: uint = 0
   for pair in pairs:
-    if rangeContains(pair.left, pair.right):
+    if rangeFullyContains(pair.left, pair.right):
       score += 1
   
   return score
 
-proc part2(): uint =
-  return 2
+proc part2(pairs: seq[ref Pair]): uint =
+  var score: uint = 0
+  for pair in pairs:
+    if rangePartiallyContains(pair.left, pair.right):
+      score += 1
+  
+  return score
 
 proc day4(): void = 
   let entireFile = readFile("./build/input.txt")
@@ -50,6 +64,6 @@ proc day4(): void =
     pairs.add(pair)
 
   echo fmt"⭐️ Part 1: {part1(pairs)}"
-  echo fmt"⭐️ Part 2: {part2()}"
+  echo fmt"⭐️ Part 2: {part2(pairs)}"
 
 day4()
