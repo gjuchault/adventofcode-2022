@@ -3,11 +3,11 @@ import std/strformat
 import std/sequtils
 import std/intsets
 
-type Rucksack = object
-  firstCompartiment: IntSet
-  secondCompartiment: IntSet
+type Rucksack* = object
+  firstCompartiment*: IntSet
+  secondCompartiment*: IntSet
 
-proc part1(rucksacks: seq[ref Rucksack]): uint =
+proc part1*(rucksacks: seq[ref Rucksack]): uint =
   var score = 0
 
   for rucksack in rucksacks:
@@ -20,7 +20,7 @@ proc part1(rucksacks: seq[ref Rucksack]): uint =
 
   return uint(score)
 
-proc part2(rucksacks: seq[ref Rucksack]): uint =
+proc part2*(rucksacks: seq[ref Rucksack]): uint =
   var score = 0
 
   if rucksacks.len mod 3 != 0:
@@ -38,7 +38,7 @@ proc part2(rucksacks: seq[ref Rucksack]): uint =
 
   return uint(score)
 
-proc letterToPriority(letter: char): int =
+proc letterToPriority*(letter: char): int =
   let asciiCode = int(letter)
 
   if asciiCode >= int('A') and asciiCode <= int('Z'):
@@ -46,7 +46,7 @@ proc letterToPriority(letter: char): int =
   elif asciiCode >= int('a') and asciiCode <= int('z'):
     return asciiCode - int('a') + 1
 
-proc dayX(): void = 
+proc day3(): void = 
   let entireFile = readFile("./build/input.txt")
 
   var rucksacks: seq[ref Rucksack] = @[]
@@ -71,4 +71,5 @@ proc dayX(): void =
   echo fmt"⭐️ Part 1: {part1(rucksacks)}"
   echo fmt"⭐️ Part 2: {part2(rucksacks)}"
 
-dayX()
+if is_main_module:
+  day3()

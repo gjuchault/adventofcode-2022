@@ -14,4 +14,8 @@ echo "🎄 Advent of Code 2022: day $1"
 rm -rf build/
 mkdir -p build/
 cp ./src/day$1/input.txt ./build
+echo "🧪 Tests:"
+nim compile --verbosity:0 --outdir:./build --run ./src/day$1/tests.nim
+echo ""
+echo "🎄 Run:"
 nim compile --verbosity:0 --outdir:./build --run ./src/day$1/main.nim

@@ -3,12 +3,12 @@ import std/strformat
 import std/heapqueue
 
 type Elf* = object
-  caloriesSum: uint
+  caloriesSum*: uint
 
 proc `<`(leftElf, rightElf: ref Elf): bool = 
   return leftElf.caloriesSum < rightElf.caloriesSum
 
-proc part1(elves: seq[ref Elf]): uint =
+proc part1*(elves: seq[ref Elf]): uint =
   if (elves.len == 0):
     return 0
 
@@ -20,7 +20,7 @@ proc part1(elves: seq[ref Elf]): uint =
   
   return topElfByCalorie.caloriesSum
 
-proc part2(elves: seq[ref Elf]): uint =
+proc part2*(elves: seq[ref Elf]): uint =
   if (elves.len == 0):
     return 0
 
@@ -63,4 +63,5 @@ proc day1(): void =
   echo fmt"⭐️ Part 1: {part1(elves)}"
   echo fmt"⭐️ Part 2: {part2(elves)}"
 
-day1()
+if is_main_module:
+  day1()

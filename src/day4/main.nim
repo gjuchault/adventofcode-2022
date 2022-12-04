@@ -1,13 +1,13 @@
 import std/strutils
 import std/strformat
 
-type IdRange = object
-  rangeStart: uint
-  rangeEnd: uint
+type IdRange* = object
+  rangeStart*: uint
+  rangeEnd*: uint
 
-type Pair = tuple[left: ref IdRange, right: ref IdRange]
+type Pair* = tuple[left: ref IdRange, right: ref IdRange]
 
-proc rangeFullyContains(left: ref IdRange, right: ref IdRange): bool =
+proc rangeFullyContains*(left: ref IdRange, right: ref IdRange): bool =
   let leftContainsRight = left.rangeStart <= right.rangeStart and
     left.rangeEnd >= right.rangeEnd
 
@@ -16,7 +16,7 @@ proc rangeFullyContains(left: ref IdRange, right: ref IdRange): bool =
 
   return leftContainsRight or rightContainsLeft
 
-proc rangePartiallyContains(left: ref IdRange, right: ref IdRange): bool =
+proc rangePartiallyContains*(left: ref IdRange, right: ref IdRange): bool =
   let leftContainsRight = left.rangeStart <= right.rangeStart and
     left.rangeEnd >= right.rangeStart
 
@@ -25,7 +25,7 @@ proc rangePartiallyContains(left: ref IdRange, right: ref IdRange): bool =
 
   return leftContainsRight or rightContainsLeft
 
-proc part1(pairs: seq[ref Pair]): uint =
+proc part1*(pairs: seq[ref Pair]): uint =
   var score: uint = 0
   for pair in pairs:
     if rangeFullyContains(pair.left, pair.right):
@@ -33,7 +33,7 @@ proc part1(pairs: seq[ref Pair]): uint =
   
   return score
 
-proc part2(pairs: seq[ref Pair]): uint =
+proc part2*(pairs: seq[ref Pair]): uint =
   var score: uint = 0
   for pair in pairs:
     if rangePartiallyContains(pair.left, pair.right):
@@ -66,4 +66,5 @@ proc day4(): void =
   echo fmt"⭐️ Part 1: {part1(pairs)}"
   echo fmt"⭐️ Part 2: {part2(pairs)}"
 
-day4()
+if is_main_module:
+  day4()

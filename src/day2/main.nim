@@ -21,7 +21,7 @@ const rightActionPart2Map = {
   "Z": GameResult.Win
 }.toTable
 
-proc part1(games: seq[GameLine]): uint =
+proc part1*(games: seq[GameLine]): uint =
   var score: uint = 0
 
   for gameLine in games:
@@ -29,7 +29,7 @@ proc part1(games: seq[GameLine]): uint =
 
   return score
 
-proc part2(games: seq[GameLine]): uint =
+proc part2*(games: seq[GameLine]): uint =
   var score: uint = 0
 
   for gameLine in games:
@@ -58,4 +58,5 @@ proc day2(): void =
   echo fmt"⭐️ Part 1: {part1(games)}"
   echo fmt"⭐️ Part 2: {part2(games)}"
 
-day2()
+if is_main_module:
+  day2()
