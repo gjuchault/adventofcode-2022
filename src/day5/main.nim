@@ -19,8 +19,21 @@ proc part1*(stacks: seq[seq[char]], commands: seq[ref Command]): string =
 
   return message
 
-proc part2*(): uint =
-  return 2
+proc part2*(stacks: seq[seq[char]], commands: seq[ref Command]): string =
+  var stacksCopy = @stacks
+  for command in commands:
+    var extractedChars: seq[char] = @[]
+    for i in 1 .. command.cratesToMove:
+      let extractedChar = stacksCopy[command.fromStack].pop()
+      extractedChars.insert(extractedChar, 0)
+    for extractedChar in extractedChars:
+      stacksCopy[command.toStack].add(extractedChar)
+  
+  var message = ""
+  for stack in stacksCopy:
+    message.add(stack[^1])
+
+  return message
 
 proc day5(): void = 
   let entireFile = readFile("./build/input.txt")
@@ -59,7 +72,7 @@ proc day5(): void =
     commands.add(command)
 
   echo fmt"⭐️ Part 1: {part1(stacks, commands)}"
-  echo fmt"⭐️ Part 2: {part2()}"
+  echo fmt"⭐️ Part 2: {part2(stacks, commands)}"
 
 if is_main_module:
   day5()
