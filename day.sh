@@ -15,7 +15,7 @@ rm -rf build/
 mkdir -p build/
 cp ./src/day$1/input.txt ./build
 echo "🧪 Tests:"
-nim compile --verbosity:0 --outdir:./build --run ./src/day$1/tests.nim
+nim compile --verbosity:0 --outdir:./build --run ./src/day$1/tests.nim || exit 1
 echo ""
 echo "🎄 Run:"
 nim compile --verbosity:0 --outdir:./build --run ./src/day$1/main.nim

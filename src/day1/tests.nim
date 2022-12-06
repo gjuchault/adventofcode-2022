@@ -22,13 +22,13 @@ let firstExample = @[
 ]
 
 suite "part1()":
-  test "given first example, it returns the expected result":
+  test "given example(s), it returns the expected result(s)":
     let result = part1(firstExample)
 
     check(result == 24000)
 
 suite "part2()":
-  test "given first example, it returns the expected result":
+  test "given example(s), it returns the expected result(s)":
     let result = part2(firstExample)
 
     check(result == 45000)

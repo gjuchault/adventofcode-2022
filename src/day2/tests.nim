@@ -47,10 +47,10 @@ let firstExample: seq[GameLine] = @[
 ]
 
 suite "part1()":
-  test "given first example, it returns the expected result":
+  test "given example(s), it returns the expected result(s)":
     check(part1(firstExample) == 15)
 
 suite "part2()":
-  test "given first example, it returns the expected result":
+  test "given example(s), it returns the expected result(s)":
     check(part2(firstExample) == 12)
 

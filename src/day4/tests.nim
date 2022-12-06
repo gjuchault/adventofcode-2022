@@ -69,9 +69,9 @@ let firstExample: seq[ref Pair] = @[
 ]
 
 suite "part1()":
-  test "given first example, it returns the expected result":
+  test "given example(s), it returns the expected result(s)":
     check(part1(firstExample) == 2)
 
 suite "part2()":
-  test "given first example, it returns the expected result":
+  test "given example(s), it returns the expected result(s)":
     check(part2(firstExample) == 4)

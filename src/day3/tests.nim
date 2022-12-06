@@ -40,9 +40,9 @@ let firstExample: seq[ref Rucksack] = @[
 ]
 
 suite "part1()":
-  test "given first example, it returns the expected result":
+  test "given example(s), it returns the expected result(s)":
     check(part1(firstExample) == 157)
 
 suite "part2()":
-  test "given first example, it returns the expected result":
+  test "given example(s), it returns the expected result(s)":
     check(part2(firstExample) == 70)

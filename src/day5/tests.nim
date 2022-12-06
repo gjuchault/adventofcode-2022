@@ -17,9 +17,9 @@ let firstExampleCommands: seq[ref Command] = @[
 ]
 
 suite "part1()":
-  test "given first example, it returns the expected result":
+  test "given example(s), it returns the expected result(s)":
     check(part1(firstExampleStacks, firstExampleCommands) == "CMZ")
 
 suite "part2()":
-  test "given first example, it returns the expected result":
+  test "given example(s), it returns the expected result(s)":
     check(part2(firstExampleStacks, firstExampleCommands) == "MCD")
