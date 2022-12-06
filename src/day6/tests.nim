@@ -17,4 +17,8 @@ suite "part1()":
 
 suite "part2()":
   test "given examples, it returns the expected result":
-    check(1 == 1)
+    check(part1(firstExample) == 7)
+    check(part1(secondExample) == 5)
+    check(part1(thirdExample) == 6)
+    check(part1(fourthExample) == 10)
+    check(part1(fifthExample) == 11)
