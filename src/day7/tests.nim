@@ -51,4 +51,4 @@ suite "part1()":
 
 suite "part2()":
   test "given first example, it returns the expected result":
-    check(2 == 2)
+    check(part2(firstExampleRootDirectory) == 24933642)
