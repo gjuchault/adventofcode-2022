@@ -40,8 +40,42 @@ proc part1*(treeGrid: TreeGrid): uint =
 
   return output
 
-proc part2*(): uint =
-  return 2
+proc part2*(treeGrid: TreeGrid): uint =
+  var output: uint = 0
+
+  for (x, y, v) in treeGrid:
+    if treeGrid.isEdge(x, y):
+      continue
+
+    var scoreFromTop: uint = 0
+    for topY in countdown(y - 1, 0, 1):
+      scoreFromTop += 1
+      if treeGrid.get(x, topY) >= v:
+        break;
+
+    var scoreFromRight: uint = 0
+    for rightX in x + 1 .. treeGrid.width() - 1:
+      scoreFromRight += 1
+      if treeGrid.get(rightX, y) >= v:
+        break;
+
+    var scoreFromBottom: uint = 0
+    for bottomY in y + 1 .. treeGrid.height() - 1:
+      scoreFromBottom += 1
+      if treeGrid.get(x, bottomY) >= v:
+        break;
+
+    var scoreFromLeft: uint = 0
+    for leftX in countdown(x - 1, 0, 1):
+      scoreFromLeft += 1
+      if treeGrid.get(leftX, y) >= v:
+        break;
+
+    let treeScore = scoreFromTop * scoreFromRight * scoreFromBottom * scoreFromLeft
+
+    output = max(treeScore, output)
+
+  return output
 
 proc day8(): void = 
   let entireFile = readFile("./build/input.txt")
@@ -55,7 +89,7 @@ proc day8(): void =
     treeGrid.grid.add(row)
   
   echo fmt"⭐️ Part 1: {part1(treeGrid)}"
-  echo fmt"⭐️ Part 2: {part2()}"
+  echo fmt"⭐️ Part 2: {part2(treeGrid)}"
 
 if is_main_module:
   day8()

@@ -130,3 +130,49 @@ suite "isEdge()":
     check(g.isEdge(4, 0) == true)
     check(g.isEdge(0, 4) == true)
     check(g.isEdge(4, 4) == true)
+
+suite "get()":
+  test "given a grid and some coordinates, it returns the value":
+    let g = Grid[int](
+      grid: @[
+        @[3,0,3,7,3],
+        @[2,5,5,1,2],
+        @[6,5,3,3,2],
+        @[3,3,5,4,9],
+        @[4,5,3,9,0]
+      ]
+    )
+
+    check(g.get(0, 0) == 3)
+    check(g.get(0, 1) == 2)
+    check(g.get(1, 0) == 0)
+    check(g.get(1, 1) == 5)
+    check(g.get(4, 0) == 3)
+    check(g.get(0, 4) == 4)
+    check(g.get(4, 4) == 0)
+
+suite "width()":
+  test "given a grid, it returns the width":
+    let g = Grid[int](
+      grid: @[
+        @[3,0,3,7,3],
+        @[2,5,5,1,2],
+        @[6,5,3,3,2],
+        @[3,3,5,4,9],
+        @[4,5,3,9,0]
+      ]
+    )
+
+    check(g.width() == 5)
+
+suite "height()":
+  test "given a grid, it returns the height":
+    let g = Grid[int](
+      grid: @[
+        @[3,0,3,7,3],
+        @[2,5,5,1,2],
+        @[6,5,3,3,2],
+      ]
+    )
+
+    check(g.height() == 3)
