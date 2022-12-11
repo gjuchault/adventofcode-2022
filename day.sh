@@ -13,7 +13,7 @@ fi
 echo "🎄 Advent of Code 2022: day $1"
 rm -rf build/
 mkdir -p build/
-cp ./src/day$1/input.txt ./build
+cp ./src/day$1/*.txt ./build
 echo "🧪 Tests:"
 nim compile --verbosity:0 --outdir:./build --run ./src/grid/tests.nim || exit 1
 nim compile --verbosity:0 --outdir:./build --run ./src/day$1/tests.nim || exit 1
