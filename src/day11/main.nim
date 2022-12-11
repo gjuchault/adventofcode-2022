@@ -23,8 +23,8 @@ type MonkeyOperation* = object
   of Old: discard
 
 type Monkey* = object
-  startingItems*: seq[int]
-  operation*: MonkeyOperation
+  startingItems: seq[int]
+  operation: MonkeyOperation
   testDivisibleBy: int
   testTrueTarget: int
   testFalseTarget: int
@@ -38,13 +38,11 @@ proc applyOperation(old: int, operation: MonkeyOperation): int =
   )
 
 proc part1*(monkeys: seq[ref Monkey]): int =
-  let monkeysCopy = @monkeys
-
   var scoreByMonkey = newSeqWith[int](monkeys.len, 0)
 
   for round in 1 .. 20:
-    for i in 0 .. monkeysCopy.len - 1:
-      let monkey = monkeysCopy[i]
+    for i in 0 .. monkeys.len - 1:
+      let monkey = monkeys[i]
 
       for item in monkey.startingItems:
         scoreByMonkey[i] += 1
@@ -59,9 +57,9 @@ proc part1*(monkeys: seq[ref Monkey]): int =
         worryLevel = worryLevel div 3
 
         if worryLevel mod monkey.testDivisibleBy == 0:
-          monkeysCopy[monkey.testTrueTarget].startingItems.add(worryLevel)
+          monkeys[monkey.testTrueTarget].startingItems.add(worryLevel)
         else:
-          monkeysCopy[monkey.testFalseTarget].startingItems.add(worryLevel)
+          monkeys[monkey.testFalseTarget].startingItems.add(worryLevel)
 
       monkey.startingItems = @[]
 
@@ -69,8 +67,37 @@ proc part1*(monkeys: seq[ref Monkey]): int =
 
   return scoreByMonkey[0] * scoreByMonkey[1]
 
-proc part2*(): uint =
-  return 2
+proc part2*(monkeys: seq[ref Monkey]): int =
+  var scoreByMonkey = newSeqWith[int](monkeys.len, 0)
+  var maxLevel = foldl(monkeys, a * b.testDivisibleBy, 1)
+
+  for round in 1 .. 10000:
+    for i in 0 .. monkeys.len - 1:
+      let monkey = monkeys[i]
+
+      for item in monkey.startingItems:
+        scoreByMonkey[i] += 1
+
+        # 1 - set worry level to item level
+        var worryLevel = item
+
+        # 2 - apply operation
+        worryLevel = applyOperation(worryLevel, monkey.operation)
+
+        # 3 - always keep worry level to the max level which is the
+        # multiplication of all tests.
+        worryLevel = worryLevel mod maxLevel
+
+        if worryLevel mod monkey.testDivisibleBy == 0:
+          monkeys[monkey.testTrueTarget].startingItems.add(worryLevel)
+        else:
+          monkeys[monkey.testFalseTarget].startingItems.add(worryLevel)
+
+      monkey.startingItems = @[]
+
+  sort(scoreByMonkey, Descending)
+
+  return scoreByMonkey[0] * scoreByMonkey[1]
 
 proc parseMonkeyOperationKind(input: string): MonkeyOperationKind =
   if input == "+": return MonkeyOperationKind.Add
@@ -107,10 +134,8 @@ proc parse*(input: string): seq[ref Monkey] =
 proc day11(): void = 
   let entireFile = readFile("./build/input.txt")
 
-  let monkeys = parse(entireFile)
-
-  echo fmt"⭐️ Part 1: {part1(monkeys)}"
-  # echo fmt"⭐️ Part 2: {part2()}"
+  echo fmt"⭐️ Part 1: {part1(parse(entireFile))}"
+  echo fmt"⭐️ Part 2: {part2(parse(entireFile))}"
 
 if is_main_module:
   day11()
