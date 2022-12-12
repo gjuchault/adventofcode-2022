@@ -16,6 +16,17 @@ proc getVisitableAdjacents(map: HeightMap, pos: (int, int)): seq[(int, int)] =
 
   return visitableAdjacents
 
+proc getVisitableAdjacentsFromEnd(map: HeightMap, pos: (int, int)): seq[(int, int)] =
+  var visitableAdjacents: seq[(int, int)] = @[];
+
+  let posValue = map.get(pos[0], pos[1])
+
+  for (adjX, adjY, adjValue) in map.adjacents(pos[0], pos[1], false):
+    if posValue - adjValue <= 1:
+      visitableAdjacents.add((adjX, adjY))
+
+  return visitableAdjacents
+
 proc part1*(map: HeightMap, startPos: (int, int), endPos: (int, int)): int =
   # BFS
   var distances = initTable[(int, int), int]()
@@ -59,8 +70,46 @@ proc part1*(map: HeightMap, startPos: (int, int), endPos: (int, int)): int =
   return path.len
 
 
-proc part2*(): uint =
-  return 2
+proc part2*(map: HeightMap, startPos: (int, int)): int =
+  # BFS
+  var distances = initTable[(int, int), int]()
+  var prev = initTable[(int, int), (int, int)]()
+  var visited = initTable[(int, int), bool]()
+
+  for (x, y, value) in map:
+    distances[(x, y)] = high(int)
+    visited[(x, y)] = false
+
+  visited[startPos] = true
+  distances[startPos] = 0
+
+  var queue: seq[(int, int)] = @[startPos]
+
+  while queue.len > 0:
+    let node = queue.pop()
+    for adjacent in getVisitableAdjacentsFromEnd(map, node):
+      let adjacentDistance = distances[node] + 1
+      let hasVisistedAdjacentAlready = visited[adjacent] == true
+      let isAdjacentDistanceAboveNow = distances[adjacent] > adjacentDistance
+
+      if hasVisistedAdjacentAlready and not isAdjacentDistanceAboveNow:
+        continue
+
+      visited[adjacent] = true
+      distances[adjacent] = adjacentDistance
+      prev[adjacent] = node
+      queue.add(adjacent)
+
+  var minDistance = high(int)
+
+  for (x, y, val) in map:
+    if val != 1:
+      continue
+
+    if distances[(x, y)] < minDistance:
+      minDistance = distances[(x, y)]
+
+  return minDistance
 
 proc parse*(lines: seq[string]): (HeightMap, (int, int), (int, int)) =
   var map = HeightMap()
@@ -86,7 +135,7 @@ proc day12(): void =
   let (map, startPos, endPos) = parse(lines)
 
   echo fmt"⭐️ Part 1: {part1(map, startPos, endPos)}"
-  echo fmt"⭐️ Part 2: {part2()}"
+  echo fmt"⭐️ Part 2: {part2(map, endPos)}"
 
 if is_main_module:
   day12()
