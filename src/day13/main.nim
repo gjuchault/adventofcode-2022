@@ -1,3 +1,4 @@
+import std/algorithm
 import std/strutils
 import std/sequtils
 import std/strformat
@@ -37,16 +38,16 @@ proc compare*(left: ref PairItem, right: ref PairItem): ComparisonResult =
       let subComparison = compare(left.list[i], right.list[i])
       case subComparison:
         of Continue: continue
-        of NotRightOrder: return NotRightOrder
-        of RightOrder: return RightOrder
+        of NotRightOrder: return ComparisonResult.NotRightOrder
+        of RightOrder: return ComparisonResult.RightOrder
 
     # ran out of items
     if right.list.len < left.list.len:
-      return NotRightOrder
+      return ComparisonResult.NotRightOrder
     elif left.list.len < right.list.len:
-      return RightOrder
+      return ComparisonResult.RightOrder
     else:
-      return Continue
+      return ComparisonResult.Continue
 
   if left.kind == PairKind.List and right.kind == PairKind.Integer:
     return compare(left, PairItemRef(kind: List, list: @[right]))
@@ -55,20 +56,6 @@ proc compare*(left: ref PairItem, right: ref PairItem): ComparisonResult =
     return compare(PairItemRef(kind: List, list: @[left]), right)
 
   raise newException(IOError, "Could not find out")
-
-
-proc part1*(pairs: seq[(PairitemRef, PairItemRef)]): int =
-  var sum: int = 0
-
-  for i in 0 .. pairs.len - 1:
-    if compare(pairs[i][0], pairs[i][1]) == ComparisonResult.RightOrder:
-      sum += i + 1
-
-  return sum
-
-
-proc part2*(): uint =
-  return 2
 
 proc parsePairItem*(input: JsonNode): ref PairItem =
   if input.kind == JsonNodeKind.JInt:
@@ -87,11 +74,48 @@ proc parse*(input: string): seq[(PairitemRef, PairItemRef)] =
 
   return pairsList
 
+proc part1*(pairs: seq[(PairItemRef, PairItemRef)]): int =
+  var sum: int = 0
+
+  for i in 0 .. pairs.len - 1:
+    if compare(pairs[i][0], pairs[i][1]) == ComparisonResult.RightOrder:
+      sum += i + 1
+
+  return sum
+
+proc part2*(pairs: seq[(PairItemRef, PairItemRef)]): int =
+  var extendedPairs = newSeq[PairItemRef](pairs.len * 2)
+
+  for i in 0 .. pairs.len - 1:
+    extendedPairs[(i * 2)] = pairs[i][0]
+    extendedPairs[(i * 2) + 1] = pairs[i][1]
+
+  let divider2 = parsePairItem(parseJson("[[2]]"))
+  let divider6 = parsePairItem(parseJson("[[6]]"))
+
+  extendedPairs.add(divider2)
+  extendedPairs.add(divider6)
+
+  extendedPairs.sort(proc (x, y: PairItemRef): int =
+    case compare(x, y):
+      of Continue: return 0
+      of NotRightOrder: return 1
+      of RightOrder: return -1
+  )
+
+  var decoderKey = 1
+
+  for i in 0 .. extendedPairs.len - 1:
+    if extendedPairs[i] == divider2 or extendedPairs[i] == divider6:
+      decoderKey *= (i + 1)
+
+  return decoderKey
+
 proc day13(): void = 
   let entireFile = readFile("./build/input.txt")
 
   echo fmt"⭐️ Part 1: {part1(parse(entireFile))}"
-  echo fmt"⭐️ Part 2: {part2()}"
+  echo fmt"⭐️ Part 2: {part2(parse(entireFile))}"
 
 if is_main_module:
   day13()
