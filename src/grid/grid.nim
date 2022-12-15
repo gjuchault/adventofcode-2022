@@ -39,6 +39,11 @@ proc iterate*[T](g: Grid[T], gridIterator: proc (x: int, y: int, value: T)) =
       gridIterator(x, y, g.grid[y][x])
 
 proc incl*[T](g: var Grid[T], x: int, y: int, value: T, fillValue: T) =
+  g.inclFill(x, y, fillValue)
+
+  g.grid[y][x] = value
+
+proc inclFill*[T](g: var Grid[T], x: int, y: int, fillValue: T) =
   for y in g.grid.len .. y:
     var emptyRow: seq[T] = @[]
     for i in 0 .. x:
@@ -49,7 +54,6 @@ proc incl*[T](g: var Grid[T], x: int, y: int, value: T, fillValue: T) =
   for x in g.grid[y].len .. x:
     g.grid[y].add(fillValue)
 
-  g.grid[y][x] = value
 
 proc get*[T](g: Grid[T], x: int, y: int): T =
   return g.grid[y][x]

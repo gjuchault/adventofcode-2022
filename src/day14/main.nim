@@ -57,8 +57,56 @@ proc part1*(initialMap: Map): int =
 
   return i - 1
 
-proc part2*(): int =
-  return 2
+# 121 too low
+proc part2*(initialMap: Map): int =
+  var map = initialMap.duplicate()
+
+  var floorLevel = map.fill(Air).sliceByRemovingFill(Air).height() + 1
+
+  map.incl(500, floorLevel, Rock, Air)
+
+  var i = 0
+  while true:
+    i += 1
+    var sandPosition = (500, 0)
+
+    while true:
+      let currentTile = map.get(sandPosition[0], sandPosition[1])
+
+      map.inclFill(sandPosition[0], sandPosition[1] + 1, Air)
+      map.inclFill(sandPosition[0] - 1, sandPosition[1] + 1, Air)
+      map.inclFill(sandPosition[0] + 1, sandPosition[1] + 1, Air)
+      var bottomMiddleTile = map.get(sandPosition[0], sandPosition[1] + 1)
+      var bottomLeftTile = map.get(sandPosition[0] - 1, sandPosition[1] + 1)
+      var bottomRightTile = map.get(sandPosition[0] + 1, sandPosition[1] + 1)
+
+      if sandPosition[1] + 1 >= floorLevel:
+        bottomMiddleTile = Rock
+        bottomLeftTile = Rock
+        bottomRightTile = Rock
+
+      # 1 - try to make sand fall vertically
+      if (currentTile == Air or currentTile == SourceOfSand) and bottomMiddleTile == Air:
+        sandPosition = (sandPosition[0], sandPosition[1] + 1)
+      
+      elif (currentTile == Air or currentTile == SourceOfSand) and (bottomMiddleTile == Rock or bottomMiddleTile == Sand):
+        # 2 - try bottom left
+        if bottomLeftTile == Air:
+          sandPosition = (sandPosition[0] - 1, sandPosition[1] + 1)
+        # 3 - try bottom right
+        elif bottomRightTile == Air:
+          sandPosition = (sandPosition[0] + 1, sandPosition[1] + 1)
+        else:
+          break
+
+      else:
+        break
+
+    # if best position is already sand
+    if (sandPosition[0], sandPosition[1]) == (500, 0):
+      return i
+
+    map.incl(sandPosition[0], sandPosition[1], Sand, Air)
 
 proc parse*(input: string): Map =
   var map = Map()
@@ -104,7 +152,7 @@ proc day14(): void =
 
 
   echo fmt"⭐️ Part 1: {part1(map)}"
-  echo fmt"⭐️ Part 2: {part2()}"
+  echo fmt"⭐️ Part 2: {part2(map)}"
 
 if is_main_module:
   day14()
