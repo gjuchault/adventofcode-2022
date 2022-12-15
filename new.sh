@@ -22,4 +22,6 @@ mkdir ./src/day$1
 touch ./src/day$1/input.txt
 sed "s/dayX/day$1/g" ./src/template.nim > ./src/day$1/main.nim
 cp ./src/template.tests.nim ./src/day$1/tests.nim
-./day.sh $1
+code ./src/day$1/main.nim
+code ./src/day$1/input.txt
+code ./src/day$1/tests.nim

@@ -1,10 +1,10 @@
 import std/strutils
 import std/strformat
 
-proc part1*(): uint =
+proc part1*(): int =
   return 1
 
-proc part2*(): uint =
+proc part2*(): int =
   return 2
 
 proc dayX(): void = 

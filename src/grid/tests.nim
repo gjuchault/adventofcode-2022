@@ -176,3 +176,99 @@ suite "height()":
     )
 
     check(g.height() == 3)
+
+suite "duplicate()":
+  test "given a grid, it returns the same grid":
+    var g = Grid[int](grid: @[ @[1] ])
+    var g2 = g.duplicate()
+
+    g.grid[0][0] = 2
+
+    check(g2.grid[0][0] == 1)
+
+    g2.grid[0][0] = 3
+
+    check(g.grid[0][0] == 2)
+
+suite "fill()":
+  test "given a grid, it returns a squared one":
+    var g = Grid[int](
+      grid: @[
+        @[3, 1],
+        @[3, 1, 1, 4],
+        @[3, 1, 1],
+        @[1]
+      ]
+    )
+
+    let g2 = g.fill(0)
+
+    check(g2.grid == @[
+        @[3, 1, 0, 0],
+        @[3, 1, 1, 4],
+        @[3, 1, 1, 0],
+        @[1, 0, 0, 0]
+    ])
+
+suite "slice()":
+  test "given a grid, it returns a sliced one":
+    let g = Grid[int](
+      grid: @[
+        @[3, 1, 0, 0],
+        @[3, 1, 2, 4],
+        @[1, 3, 4, 0],
+        @[2, 2, 2, 2]
+      ]
+    )
+
+    let newG = g.slice(1, 2, 1, 2)
+
+    check(newG.grid == @[
+        @[1, 2],
+        @[3, 4],
+    ])
+
+suite "sliceByRemovingFill()":
+  test "given a grid with filled corners, it returns a sliced one":
+    check(
+      Grid[int](
+        grid: @[
+          @[0, 0, 0, 0],
+          @[0, 1, 2, 0],
+          @[0, 3, 4, 0],
+          @[0, 0, 0, 0]
+        ]
+      ).sliceByRemovingFill(0).grid == @[
+          @[1, 2],
+          @[3, 4],
+      ]
+    )
+
+    check(
+      Grid[int](
+        grid: @[
+          @[0, 0, 0, 0],
+          @[0, 1, 2, 1],
+          @[0, 3, 4, 0],
+          @[0, 0, 0, 0]
+        ]
+      ).sliceByRemovingFill(0).grid == @[
+          @[1, 2, 1],
+          @[3, 4, 0],
+      ]
+    )
+
+    check(
+      Grid[int](
+        grid: @[
+          @[0, 0, 0, 0],
+          @[0, 1, 2, 0],
+          @[0, 3, 4, 0],
+          @[0, 1, 0, 0]
+        ]
+      ).sliceByRemovingFill(0).grid == @[
+          @[1, 2],
+          @[3, 4],
+          @[1, 0],
+      ]
+    )

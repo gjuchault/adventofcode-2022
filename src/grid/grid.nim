@@ -1,3 +1,5 @@
+import std/sequtils
+
 type Grid*[T] = object
   grid*: seq[seq[T]]
 
@@ -37,14 +39,14 @@ proc iterate*[T](g: Grid[T], gridIterator: proc (x: int, y: int, value: T)) =
       gridIterator(x, y, g.grid[y][x])
 
 proc incl*[T](g: var Grid[T], x: int, y: int, value: T, fillValue: T) =
-  for y in g.grid.len .. int(y):
+  for y in g.grid.len .. y:
     var emptyRow: seq[T] = @[]
     for i in 0 .. x:
       emptyRow.add(fillValue)
     
     g.grid.add(emptyRow)
 
-  for x in g.grid[y].len .. int(x):
+  for x in g.grid[y].len .. x:
     g.grid[y].add(fillValue)
 
   g.grid[y][x] = value
@@ -61,6 +63,31 @@ proc height*[T](g: Grid[T]): int =
   assert(validate(g) == true)
 
   return g.grid.len
+
+proc duplicate*[T](g: Grid[T]): Grid[T] =
+  let newGrid = Grid[T](
+    grid: g.grid.mapIt(
+      it.mapIt(it)
+    )
+  )
+
+  return newGrid
+
+proc fill*[T](g: Grid[T], fillValue: T): Grid[T] =
+  var maxX = 0
+
+  var newG = g.duplicate()
+
+  for y in 0 .. g.grid.len - 1:
+    if g.grid[y].len > maxX:
+      maxX = g.grid[y].len
+
+  for y in 0 .. g.grid.len - 1:
+    if g.grid[y].len < maxX:
+      for i in g.grid[y].len .. maxX - 1:
+        newG.grid[y].add(fillValue)
+
+  return newG
 
 proc adjacents*[T](g: Grid[T], x: int, y: int, includeDiagonals: bool): seq[(int, int, T)] =
   if not validate(g):
@@ -96,3 +123,28 @@ proc isEdge*[T](g: Grid[T], x: int, y: int): bool =
   let isBottomEdge = y == g.grid.len - 1
 
   return isLeftEdge or isRightEdge or isTopEdge or isBottomEdge
+
+proc slice*[T](g: Grid[T], x1: int, x2: int, y1: int, y2: int): Grid[T] =
+  return Grid[T](
+    grid: mapIt(
+      g.grid[y1 .. y2],
+      it[x1 .. x2]
+    )
+  )
+
+proc sliceByRemovingFill*[T](g: Grid[T], fillValue: T): Grid[T] =
+  assert(validate(g) == true)
+
+  var minX = high(int)
+  var maxX = 0
+  var minY = high(int)
+  var maxY = 0
+
+  for (x, y, value) in g:
+    if value != fillValue:
+      minX = min(minX, x)
+      maxX = max(maxX, x)
+      minY = min(minY, y)
+      maxY = max(maxY, y)
+
+  return g.slice(minX, maxX, minY, maxY)
