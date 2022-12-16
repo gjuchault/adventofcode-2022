@@ -126,33 +126,42 @@ proc adjacents*[T](g: Grid[T], x: int, y: int, includeDiagonals: bool): seq[(int
 
   return output
 
-proc adjacentLayerCoords*(x: int, y: int, layer: int): seq[(int, int)] =
+proc losangeMaxCoords*(x: int, y: int, layer: int): seq[(int, int)] =
   let topY = y - layer
   let rightX = x + layer
   let bottomY = y + layer
   let leftX = x - layer
 
-  var points = initHashSet[(int, int)]()
+  return @[
+    (x, topY),
+    (rightX, y),
+    (x, bottomY),
+    (leftX, y)
+  ]
+
+proc losangeEdgeCoords*(x: int, y: int, layer: int): seq[(int, int)] =
+  let maxCoords = losangeMaxCoords(x, y, layer)
+  var points = initHashSet[(int, int)](layer * 4)
 
   for incr in 0 .. layer:
-    let topRight = (x + incr, topY + incr)
-    points.incl(topRight)
+    let topToRight = (maxCoords[0][0] + incr, maxCoords[0][1] + incr)
+    points.incl(topToRight)
 
-    let rightBottom = (rightX - incr, y + incr)
-    points.incl(rightBottom)
+    let rightToBottom = (maxCoords[1][0] - incr, maxCoords[1][1] + incr)
+    points.incl(rightToBottom)
 
-    let bottomLeft = (x - incr, bottomY - incr)
-    points.incl(bottomLeft)
+    let bottomToLeft = (maxCoords[2][0] - incr, maxCoords[2][1] - incr)
+    points.incl(bottomToLeft)
 
-    let leftTop = (leftX + incr, y - incr)
-    points.incl(leftTop)
+    let leftToTop = (maxCoords[3][0] + incr, maxCoords[3][1] - incr)
+    points.incl(leftToTop)
 
   return toSeq(points.items)
 
-proc adjacentsLayer*[T](g: Grid[T], x: int, y: int, layer: int): seq[(int, int, T)] =
+proc losangeEdge*[T](g: Grid[T], x: int, y: int, layer: int): seq[(int, int, T)] =
   var results: seq[(int, int, T)] = @[]
 
-  for (x, y) in adjacentLayerCoords(x, y, layer):
+  for (x, y) in losangeEdgeCoords(x, y, layer):
     if g.inBounds(x, y):
       results.add((x, y, g.get(x, y)))
 

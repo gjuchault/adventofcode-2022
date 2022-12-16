@@ -132,7 +132,7 @@ suite "inBounds()":
     check(g.inBounds(3, 2) == false)
     check(g.inBounds(4, 4) == true)
 
-suite "adjacentsLayer()":
+suite "losangeEdge()":
   let g = Grid[int](
     grid: @[
       @[5,4,3,4,5],
@@ -143,11 +143,11 @@ suite "adjacentsLayer()":
     ]
   )
 
-  check(g.adjacentsLayer(2, 2, 1) == @[(1, 2, 2), (3, 2, 2), (2, 3, 2), (2, 1, 2)])
-  check(g.adjacentsLayer(2, 2, 2) == @[(1, 3, 3), (3, 1, 3), (1, 1, 3), (2, 0, 3), (4, 2, 3), (3, 3, 3), (0, 2, 3), (2, 4, 3)])
-  check(g.adjacentsLayer(2, 2, 3) == @[(1, 0, 4), (0, 3, 4), (0, 1, 4), (4, 3, 4), (3, 4, 4), (3, 0, 4), (1, 4, 4), (4, 1, 4)])
-  check(g.adjacentsLayer(2, 2, 4) == @[(4, 0, 5), (4, 4, 5), (0, 0, 5), (0, 4, 5)])
-  check(g.adjacentsLayer(2, 2, 5).len == 0)
+  check(g.losangeEdge(2, 2, 1) == @[(2, 3, 2), (1, 2, 2), (2, 1, 2), (3, 2, 2)])
+  check(g.losangeEdge(2, 2, 2) == @[(3, 3, 3), (2, 0, 3), (0, 2, 3), (1, 3, 3), (3, 1, 3), (1, 1, 3), (2, 4, 3), (4, 2, 3)])
+  check(g.losangeEdge(2, 2, 3) == @[(4, 3, 4), (3, 4, 4), (0, 3, 4), (1, 0, 4), (3, 0, 4), (0, 1, 4), (1, 4, 4), (4, 1, 4)])
+  check(g.losangeEdge(2, 2, 4) == @[(0, 0, 5), (4, 0, 5), (0, 4, 5), (4, 4, 5)])
+  check(g.losangeEdge(2, 2, 5).len == 0)
 
 suite "isEdge()":
   test "given a grid and some coordinates, it returns wether the cell is an edge":
