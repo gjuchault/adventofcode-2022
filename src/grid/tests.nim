@@ -111,6 +111,44 @@ suite "adjacents()":
     check(g.adjacents(0, 4, true) == @[(1, 4, 5), (0, 3, 3), (1, 3, 3)])
     check(g.adjacents(4, 4, true) == @[(3, 4, 9), (4, 3, 9), (3, 3, 4)])
 
+suite "inBounds()":
+  test "given a grid and a point, it returns wether the point is in bounds":
+    let g = Grid[int](
+      grid: @[
+        @[3,0,3,7,3],
+        @[2,5,5,1,2],
+        @[6,5,3],
+        @[3,3,5,4,9],
+        @[3,5,3,9,0]
+      ]
+    )
+
+    check(g.inBounds(-1, 0) == false)
+    check(g.inBounds(0, -1) == false)
+    check(g.inBounds(-1, -1) == false)
+    check(g.inBounds(0, 0) == true)
+    check(g.inBounds(1, 1) == true)
+    check(g.inBounds(4, 0) == true)
+    check(g.inBounds(3, 2) == false)
+    check(g.inBounds(4, 4) == true)
+
+suite "adjacentsLayer()":
+  let g = Grid[int](
+    grid: @[
+      @[5,4,3,4,5],
+      @[4,3,2,3,4],
+      @[3,2,1,2,3],
+      @[4,3,2,3,4],
+      @[5,4,3,4,5]
+    ]
+  )
+
+  check(g.adjacentsLayer(2, 2, 1) == @[(1, 2, 2), (3, 2, 2), (2, 3, 2), (2, 1, 2)])
+  check(g.adjacentsLayer(2, 2, 2) == @[(1, 3, 3), (3, 1, 3), (1, 1, 3), (2, 0, 3), (4, 2, 3), (3, 3, 3), (0, 2, 3), (2, 4, 3)])
+  check(g.adjacentsLayer(2, 2, 3) == @[(1, 0, 4), (0, 3, 4), (0, 1, 4), (4, 3, 4), (3, 4, 4), (3, 0, 4), (1, 4, 4), (4, 1, 4)])
+  check(g.adjacentsLayer(2, 2, 4) == @[(4, 0, 5), (4, 4, 5), (0, 0, 5), (0, 4, 5)])
+  check(g.adjacentsLayer(2, 2, 5).len == 0)
+
 suite "isEdge()":
   test "given a grid and some coordinates, it returns wether the cell is an edge":
     let g = Grid[int](

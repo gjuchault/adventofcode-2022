@@ -1,4 +1,5 @@
 import std/sequtils
+import std/sets
 
 type Grid*[T] = object
   grid*: seq[seq[T]]
@@ -41,6 +42,9 @@ proc iterate*[T](g: Grid[T], gridIterator: proc (x: int, y: int, value: T)) =
 proc incl*[T](g: var Grid[T], x: int, y: int, value: T, fillValue: T) =
   g.inclFill(x, y, fillValue)
 
+  g.unsafeIncl(x, y, value)
+
+proc unsafeIncl*[T](g: var Grid[T], x: int, y: int, value: T) =
   g.grid[y][x] = value
 
 proc inclFill*[T](g: var Grid[T], x: int, y: int, fillValue: T) =
@@ -48,7 +52,7 @@ proc inclFill*[T](g: var Grid[T], x: int, y: int, fillValue: T) =
     var emptyRow: seq[T] = @[]
     for i in 0 .. x:
       emptyRow.add(fillValue)
-    
+
     g.grid.add(emptyRow)
 
   for x in g.grid[y].len .. x:
@@ -57,6 +61,10 @@ proc inclFill*[T](g: var Grid[T], x: int, y: int, fillValue: T) =
 
 proc get*[T](g: Grid[T], x: int, y: int): T =
   return g.grid[y][x]
+
+proc getOr*[T](g: Grid[T], x: int, y: int, defaultValue: T): T =
+  if not g.inBounds(x, y): return defaultValue
+  return g.get(x, y)
 
 proc width*[T](g: Grid[T]): int =
   assert(validate(g) == true)
@@ -117,6 +125,41 @@ proc adjacents*[T](g: Grid[T], x: int, y: int, includeDiagonals: bool): seq[(int
   if not isRightEdge and not isBottomEdge: output.add((x + 1, y + 1, g.grid[y + 1][x + 1]))
 
   return output
+
+proc adjacentLayerCoords*(x: int, y: int, layer: int): seq[(int, int)] =
+  let topY = y - layer
+  let rightX = x + layer
+  let bottomY = y + layer
+  let leftX = x - layer
+
+  var points = initHashSet[(int, int)]()
+
+  for incr in 0 .. layer:
+    let topRight = (x + incr, topY + incr)
+    points.incl(topRight)
+
+    let rightBottom = (rightX - incr, y + incr)
+    points.incl(rightBottom)
+
+    let bottomLeft = (x - incr, bottomY - incr)
+    points.incl(bottomLeft)
+
+    let leftTop = (leftX + incr, y - incr)
+    points.incl(leftTop)
+
+  return toSeq(points.items)
+
+proc adjacentsLayer*[T](g: Grid[T], x: int, y: int, layer: int): seq[(int, int, T)] =
+  var results: seq[(int, int, T)] = @[]
+
+  for (x, y) in adjacentLayerCoords(x, y, layer):
+    if g.inBounds(x, y):
+      results.add((x, y, g.get(x, y)))
+
+  return results
+
+proc inBounds*[T](g: Grid[T], x: int, y: int): bool =
+  return 0 <= y and y < g.grid.len and 0 <= x and x < g.grid[y].len
 
 proc isEdge*[T](g: Grid[T], x: int, y: int): bool =
   assert(validate(g) == true)
