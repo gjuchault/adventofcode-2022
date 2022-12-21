@@ -248,6 +248,35 @@ suite "fill()":
         @[1, 0, 0, 0]
     ])
 
+suite "reverse()":
+  setup:
+    let g = Grid[int](
+      grid: @[
+        @[1, 2, 3],
+        @[4, 5, 6],
+        @[7, 8, 9],
+      ]
+    )
+
+  test "given a grid, it can reverse the x axis":
+    check(g.reverse(true, false).grid == @[
+      @[3, 2, 1],
+      @[6, 5, 4],
+      @[9, 8, 7],
+    ])
+  test "given a grid, it can reverse the y axis":
+    check(g.reverse(false, true).grid == @[
+      @[7, 8, 9],
+      @[4, 5, 6],
+      @[1, 2, 3],
+    ])
+  test "given a grid, it can reverse both the x and y axis":
+    check(g.reverse(true, true).grid == @[
+      @[9, 8, 7],
+      @[6, 5, 4],
+      @[3, 2, 1],
+    ])
+
 suite "slice()":
   test "given a grid, it returns a sliced one":
     let g = Grid[int](

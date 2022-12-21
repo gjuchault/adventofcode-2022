@@ -57,7 +57,6 @@ proc part1*(initialMap: Map): int =
 
   return i - 1
 
-# 121 too low
 proc part2*(initialMap: Map): int =
   var map = initialMap.duplicate()
 

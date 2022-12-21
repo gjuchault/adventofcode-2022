@@ -1,4 +1,6 @@
+import std/algorithm
 import std/sequtils
+import std/strutils
 import std/sets
 
 type Grid*[T] = object
@@ -13,6 +15,19 @@ proc `$`*[T](t: Grid[T]): string =
     output = output & "\n"
 
   return output
+
+proc `+`*[T](t: Grid[T]): string =
+  var output: seq[string] = @[]
+
+  for row in t.grid:
+    var line = ""
+    for cell in row:
+      line = line & $cell
+    output.add(line)
+
+  reverse(output)
+
+  return output.join("\n")
 
 iterator items*[T](g: Grid[T]): (int, int, T) =
   for y in 0 .. g.grid.len - 1:
@@ -38,6 +53,10 @@ proc iterate*[T](g: Grid[T], gridIterator: proc (x: int, y: int, value: T)) =
   for y in 0 .. g.grid.len - 1:
     for x in 0 .. g.grid[y].len - 1:
       gridIterator(x, y, g.grid[y][x])
+
+proc incl*[T](g: var Grid[T], coords: seq[(int, int)], value: T, fillValue: T) =
+  for (x, y) in coords:
+    g.incl(x, y, value, fillValue)
 
 proc incl*[T](g: var Grid[T], x: int, y: int, value: T, fillValue: T) =
   g.inclFill(x, y, fillValue)
@@ -98,6 +117,17 @@ proc fill*[T](g: Grid[T], fillValue: T): Grid[T] =
     if g.grid[y].len < maxX:
       for i in g.grid[y].len .. maxX - 1:
         newG.grid[y].add(fillValue)
+
+  return newG
+
+proc reverse*[T](g: Grid[T], reverseX: bool, reverseY: bool): Grid[T] =
+  var newG = g.duplicate()
+
+  if reverseY: newG.grid.reverse()
+
+  if reverseX:
+    for y in 0 .. newG.grid.len - 1:
+      reverse(newG.grid[y])
 
   return newG
 
