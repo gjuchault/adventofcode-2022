@@ -67,8 +67,35 @@ proc part1*(commands: seq[ref Command]): uint =
 
   return uint(uniqueCoordinates.len)
 
-proc part2*(): uint =
-  return 2
+proc part2*(commands: seq[ref Command]): uint =
+  var uniqueCoordinates = initHashSet[(int, int)]()
+
+  var headPosition = (0, 0)
+  var knotPositions = [
+    (0, 0), (0, 0), (0, 0), (0, 0), (0, 0),
+    (0, 0), (0, 0), (0, 0), (0, 0)
+  ]
+
+  for command in commands:
+    # 1. move head position
+    for i in 1 .. command.count:
+      if command.direction == Direction.Up:
+        headPosition = (headPosition[0], headPosition[1] + 1)
+      if command.direction == Direction.Down:
+        headPosition = (headPosition[0], headPosition[1] - 1)
+      if command.direction == Direction.Left:
+        headPosition = (headPosition[0] - 1, headPosition[1])
+      if command.direction == Direction.Right:
+        headPosition = (headPosition[0] + 1, headPosition[1])
+
+      var prevKnot = headPosition
+      for i in 0 .. knotPositions.len - 1:
+        knotPositions[i] = findTailPositions(prevKnot, knotPositions[i])
+        prevKnot = knotPositions[i]
+
+      uniqueCoordinates.incl(knotPositions[8])
+
+  return uint(uniqueCoordinates.len)
 
 proc day9(): void = 
   let entireFile = readFile("./build/input.txt")
@@ -87,7 +114,7 @@ proc day9(): void =
     commands.add(command)
 
   echo fmt"⭐️ Part 1: {part1(commands)}"
-  echo fmt"⭐️ Part 2: {part2()}"
+  echo fmt"⭐️ Part 2: {part2(commands)}"
 
 if is_main_module:
   day9()

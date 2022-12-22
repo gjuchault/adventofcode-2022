@@ -44,4 +44,4 @@ suite "part1()":
 
 suite "part2()":
   test "given example(s), it returns the expected result(s)":
-    check(2 == 2)
+    check(part2(firstExample) == 1)
