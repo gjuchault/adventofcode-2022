@@ -111,6 +111,33 @@ proc tryToCreateBot(blueprint: ref Blueprint, state: State, botKind: Kind, minTi
 
   return none(State)
 
+proc getNewStatesForNextBots(blueprint: ref Blueprint, state: State): seq[State] =
+  var newStates = newSeq[State]()
+
+  let geodeBotPath = tryToCreateBot(blueprint, state, Kind.Geode, 1)
+  if geodeBotPath.isSome(): newStates.add(geodeBotPath.get())
+
+  let obsidianBotPath = tryToCreateBot(blueprint, state, Kind.Obsidian, 4)
+  if obsidianBotPath.isSome(): newStates.add(obsidianBotPath.get())
+
+  let clayBotPath = tryToCreateBot(blueprint, state, Kind.Clay, 7)
+  if state.bots[1] < blueprint.obsidianRobotCost[1] - 1:
+    if clayBotPath.isSome(): newStates.add(clayBotPath.get())
+  
+  let oreBotPath = tryToCreateBot(blueprint, state, Kind.Ore, 16)
+  if state.bots[0] < 4:
+    if oreBotPath.isSome(): newStates.add(oreBotPath.get())
+
+  # we will never be able to build any new bot, skip to the end
+  if geodeBotPath.isNone() and obsidianBotPath.isNone() and clayBotPath.isNone() and oreBotPath.isNone():
+    newStates.add((
+        timeLeft: 0,
+        resources: increaseResources(state, state.timeLeft),
+        bots: state.bots
+    ))
+
+  return newStates
+
 proc part1*(blueprints: seq[ref Blueprint]): int =
   var score = 0
 
@@ -130,34 +157,38 @@ proc part1*(blueprints: seq[ref Blueprint]): int =
         maxGeodes = max(maxGeodes, state.resources[3])
         continue
 
-      let geodeBotPath = tryToCreateBot(blueprint, state, Kind.Geode, 1)
-      if geodeBotPath.isSome(): queue.add(geodeBotPath.get())
-
-      let obsidianBotPath = tryToCreateBot(blueprint, state, Kind.Obsidian, 4)
-      if obsidianBotPath.isSome(): queue.add(obsidianBotPath.get())
-
-      let clayBotPath = tryToCreateBot(blueprint, state, Kind.Clay, 7)
-      if state.bots[1] < blueprint.obsidianRobotCost[1] - 1:
-        if clayBotPath.isSome(): queue.add(clayBotPath.get())
-      
-      let oreBotPath = tryToCreateBot(blueprint, state, Kind.Ore, 16)
-      if state.bots[0] < 4:
-        if oreBotPath.isSome(): queue.add(oreBotPath.get())
-
-      # we will never be able to build any new bot, skip to the end
-      if geodeBotPath.isNone() and obsidianBotPath.isNone() and clayBotPath.isNone() and oreBotPath.isNone():
-        queue.add((
-            timeLeft: 0,
-            resources: increaseResources(state, state.timeLeft),
-            bots: state.bots
-        ))
+      for newState in getNewStatesForNextBots(blueprint, state):
+        queue.add(newState)
 
     score += maxGeodes * blueprint.index
 
   return score
 
 proc part2*(blueprints: seq[ref Blueprint]): int =
-  return 2
+  var score = 1
+
+  for blueprint in blueprints[ 0 .. min(2, blueprints.len - 1) ]:
+    var queue: seq[State] = @[ (timeLeft: 32, resources: (0, 0, 0, 0), bots: (1, 0, 0, 0)) ]
+    var maxGeodes = 0
+    var earliestGeode = 0
+
+    while queue.len > 0:
+      let state = queue.pop()
+
+      # optimization: earliest geode path is always winner path
+      if state.resources[3] > 0 and state.timeLeft > earliestGeode: earliestGeode = state.timeLeft
+      if state.timeLeft < earliestGeode and state.resources[3] == 0: continue
+
+      if state.timeLeft <= 0:
+        maxGeodes = max(maxGeodes, state.resources[3])
+        continue
+
+      for newState in getNewStatesForNextBots(blueprint, state):
+        queue.add(newState)
+
+    score *= maxGeodes
+
+  return score
 
 proc parse*(input: string): seq[ref Blueprint] =
   var blueprints: seq[ref Blueprint] = @[]
