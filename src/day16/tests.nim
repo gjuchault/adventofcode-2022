@@ -2,6 +2,7 @@ import main
 import unittest
 
 let firstExample = parse(readFile("./build/firstExample.txt"))
+let firstExampleDistances = computeDistances(firstExample)
 
 suite "allPairs()":
   test "given an array, it returns all the possible pairs":
@@ -20,8 +21,8 @@ suite "bfs()":
 
 suite "part1()":
   test "given example(s), it returns the expected result(s)":
-    check(part1(firstExample) == 1651)
+    check(part1(firstExample, firstExampleDistances) == 1651)
 
 suite "part2()":
   test "given example(s), it returns the expected result(s)":
-    check(2 == 2)
+    check(part2(firstExample, firstExampleDistances) == 1707)

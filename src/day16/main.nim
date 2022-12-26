@@ -1,19 +1,9 @@
-import std/sequtils
-import std/strutils
-import std/strformat
-import std/deques
-import std/sets
-import std/tables
-import std/re
+import std/[deques, tables, sequtils, sets, strformat, strutils]
+import re
 
-type Node = object
-  rate: int
-  connections: seq[string]
-
-type ExplorationQueueItem = object
-  path: seq[string]
-  elapsed: int
-  valvesOpenedAt: Table[string, int]
+type
+  ValveInfo = tuple[rate: int, connections: seq[string]]
+  VisitValve = tuple[t: int, name: string]
 
 proc allPairs*(input: seq[string]): seq[(string, string)] =
   var pairs = newSeq[(string, string)]();
@@ -24,112 +14,158 @@ proc allPairs*(input: seq[string]): seq[(string, string)] =
 
   return pairs
 
-proc bfs*(nodes: Table[string, ref Node], nodeFrom: string, nodeTo: string): int =
-  var q = [@[nodeFrom]].toDeque
+proc bfs*(valves: Table[string, ValveInfo], valveFrom: string, valveTo: string): int =
+  var q = [@[valveFrom]].toDeque
   var visited = initHashSet[string]()
 
-  if nodeFrom == nodeTo:
+  if valveFrom == valveTo:
     return 0
 
   while q.len > 0:
     let path = q.popFirst()
-    let node = path[ ^1 ]
+    let valve = path[ ^1 ]
 
-    if visited.contains(node):
+    if visited.contains(valve):
       continue
 
-    let neighbors = nodes[node].connections
+    let neighbors = valves[valve].connections
 
     for neighbor in neighbors:
       var newPath = path
       newPath.add(neighbor)
       q.addLast(newPath)
 
-      if neighbor == nodeTo:
+      if neighbor == valveTo:
         return newPath.len - 1
 
-    visited.incl(node)
+    visited.incl(valve)
 
-proc part1*(nodes: Table[string, ref Node]): int =
-  let allNodesPairs = allPairs(toSeq(nodes.keys))
+proc computeDistances*(valves: Table[string, ValveInfo]): Table[(string, string), int] =
+  let allNodesPairs = allPairs(toSeq(valves.keys))
   var distances = initTable[(string, string), int]()
 
-  for (nodeFrom, nodeTo) in allNodesPairs:
-    if distances.contains((nodeFrom, nodeTo)): continue
+  for (valveFrom, valveTo) in allNodesPairs:
+    if distances.contains((valveFrom, valveTo)): continue
 
-    let distance = bfs(nodes, nodeFrom, nodeTo)
+    let distance = bfs(valves, valveFrom, valveTo)
 
-    distances[(nodeFrom, nodeTo)] = distance
-    distances[(nodeTo, nodeFrom)] = distance
+    distances[(valveFrom, valveTo)] = distance
+    distances[(valveTo, valveFrom)] = distance
 
-  let allPotentialValves = filterIt(toSeq(nodes.keys), nodes[it].rate > 0)
-  let maxTime = 30
+  return distances
 
-  var queue = @[
-    ExplorationQueueItem(path: @["AA"], elapsed: 0, valvesOpenedAt: initTable[string, int]())
-  ]
+proc part1*(valves: Table[string, ValveInfo], distances: Table[(string, string), int]): int =
+  const totalTime = 30
+  const openValveTime = 1
+  let valveSet = filterIt(toSeq(valves.keys), valves[it].rate > 0).toHashSet
+  var visited = ["AA"].toHashSet
+  var path = ["AA"].toDeque
 
-  var maximumPressure = 0
+  proc getScoreRecursiveOneAgent(
+    valveSet: HashSet[string],
+    visited: var HashSet[string],
+    path: var Deque[string],
+    elapsed: int,
+    released: int,
+  ): int =
+    let currValve = path.peekLast()
+    var maxReleased = released
 
-  while queue.len > 0:
-    let explorationQueue = queue.pop()
-    let currentValve = explorationQueue.path[ ^1 ]
+    for nextValve in valveSet.difference(visited):
+      let newElapsed = elapsed + distances[(currValve, nextValve)] + openValveTime
+      if newElapsed >= totalTime:
+        continue
 
-    if explorationQueue.elapsed >= maxTime or explorationQueue.path.len == allPotentialValves.len + 1:
-      var pressureReleased = 0
+      visited.incl(nextValve)
+      path.addLast(nextValve)
+      let contribution = (totalTime - newElapsed) * valves[nextValve].rate
 
-      for valve, valveOpenedAt in explorationQueue.valvesOpenedAt.pairs:
-        let minutesOpened = max(maxTime - valveOpenedAt, 0)
-        pressureReleased += nodes[valve].rate * minutesOpened
+      maxReleased = max(
+        maxReleased,
+        getScoreRecursiveOneAgent(valveSet, visited, path, newElapsed, released + contribution)
+      )
 
-      maximumPressure = max(maximumPressure, pressureReleased)
-    else:
-      for nextValve in allPotentialValves:
-        if explorationQueue.valvesOpenedAt.hasKey(nextValve):
+      visited.excl(nextValve)
+      path.popLast()
+    
+    return maxReleased
+
+  return getScoreRecursiveOneAgent(valveSet, visited, path, 0, 0)
+
+proc part2*(valves: Table[string, ValveInfo], distances: Table[(string, string), int]): int =
+  const totalTime = 26
+  const openValveTime = 1
+  let valveSet = filterIt(toSeq(valves.keys), valves[it].rate > 0).toHashSet
+  let valveSeq = valveSet.toSeq()
+  let allPairsCount = (valveSeq.len - 1) * (valveSeq.len - 2)
+  var score = 0
+
+  proc getScoreRecursiveTwoAgents(unvisited: HashSet[string], toVisit: var HashSet[VisitValve]): int =
+    let curr = min(toVisit.toSeq())
+    toVisit.excl(curr)
+    let (t, currValve) = curr
+    let contribution = (totalTime - t) * valves[currValve].rate
+    var best = 0
+
+    if toVisit.len() > 0:
+      best = max(best, getScoreRecursiveTwoAgents(unvisited, toVisit))
+
+    if unvisited.len() > 0:
+      for nextValve in unvisited:
+        let nextT = t + distances[(currValve, nextValve)] + openValveTime
+        if nextT >= totalTime:
           continue
 
-        if currentValve == nextValve: continue
+        toVisit.incl((nextT, nextValve))
 
-        let travelTime = distances[(currentValve, nextValve)]
-        let timeToOpenValve = 1
+        # make copy
+        let nextUnvisited = unvisited - [nextValve].toHashSet()
 
-        let newElapsed = explorationQueue.elapsed + travelTime + timeToOpenValve
-        # assigning the table will create a copy
-        var newValvesOpenedAt = explorationQueue.valvesOpenedAt
-        newValvesOpenedAt[nextValve] = newElapsed
+        let res = getScoreRecursiveTwoAgents(nextUnvisited, toVisit)
+        best = max(best, res)
+        toVisit.excl((nextT, nextValve))
 
-        var newPath = explorationQueue.path
-        newPath.add(nextValve)
+    toVisit.incl(curr)
 
-        queue.add(
-          ExplorationQueueItem(path: newPath, elapsed: newElapsed, valvesOpenedAt: newValvesOpenedAt)
-        )
+    return contribution + best
 
-  return maximumPressure
+  var counter = 1
+  for i in 0 .. valveSeq.len() - 1:
+    for j in i + 1 .. valveSeq.len() - 1:
+      let a = valveSeq[i]
+      let b = valveSeq[j]
 
-proc part2*(): int =
-  return 2
+      var toVisit = [(distances[("AA", a)] + 1, a), (distances[("AA", b)] + 1, b)].toHashSet()
+      var unvisited = valveSet.difference([a, b].toHashSet())
 
-proc parse*(input: string): Table[string, ref Node] =
-  var nodes = initTable[string, ref Node](50)
+      let partialScore = getScoreRecursiveTwoAgents(unvisited, toVisit)
+      score = max(score, partialScore)
+      echo "✅ " & $counter & "/" & $allPairsCount & " (" & a & "," & b & ") = " & $partialScore
+      counter += 1
 
-  for rawLine in split(input, "\n"):
+  return score
+
+proc parse*(input: string): Table[string, ValveInfo] =
+  let rawLines = split(input, "\n")
+  var valves = initTable[string, ValveInfo](rawLines.len)
+
+  for rawLine in rawLines:
     var matches: array[3, string]
     if match(rawLine, re"Valve ([A-Z]{2}) has flow rate=(\d+); tunnels? leads? to valves? ([A-Z ,]+)", matches):
-      let node = new(Node)
-      node.rate = parseInt(matches[1])
-      node.connections = split(matches[2], ", ")
-      nodes[matches[0]] = node
+      valves[matches[0]] = (parseInt(matches[1]), split(matches[2], ", "))
 
-  return nodes
+  return valves
 
 proc day16(): void = 
   let entireFile = readFile("./build/input.txt")
 
-  let nodes = parse(entireFile)
+  let valves = parse(entireFile)
 
-  echo fmt"⭐️ Part 1: {part1(nodes)}"
-  echo fmt"⭐️ Part 2: {part2()}"
+  let distances = computeDistances(valves)
+  echo "✅ Distances"
+
+  echo fmt"⭐️ Part 1: {part1(valves, distances)}"
+  echo fmt"⭐️ Part 2: {part2(valves, distances)}"
 
 if is_main_module:
   day16()
