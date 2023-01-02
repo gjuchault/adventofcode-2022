@@ -3,7 +3,7 @@ import std/sequtils
 import std/strutils
 import std/sets
 
-type Grid*[T] = object
+type Grid*[T] = ref object
   grid*: seq[seq[T]]
 
 proc `$`*[T](t: Grid[T]): string =
@@ -60,10 +60,6 @@ proc incl*[T](g: var Grid[T], coords: seq[(int, int)], value: T, fillValue: T) =
 
 proc incl*[T](g: var Grid[T], x: int, y: int, value: T, fillValue: T) =
   g.inclFill(x, y, fillValue)
-
-  g.unsafeIncl(x, y, value)
-
-proc unsafeIncl*[T](g: var Grid[T], x: int, y: int, value: T) =
   g.grid[y][x] = value
 
 proc inclFill*[T](g: var Grid[T], x: int, y: int, fillValue: T) =
@@ -77,13 +73,16 @@ proc inclFill*[T](g: var Grid[T], x: int, y: int, fillValue: T) =
   for x in g.grid[y].len .. x:
     g.grid[y].add(fillValue)
 
-
 proc get*[T](g: Grid[T], x: int, y: int): T =
   return g.grid[y][x]
 
 proc getOr*[T](g: Grid[T], x: int, y: int, defaultValue: T): T =
   if not g.inBounds(x, y): return defaultValue
   return g.get(x, y)
+
+proc getOr*[T](g: Grid[T], coords: (int, int), defaultValue: T): T =
+  if not g.inBounds(coords[0], coords[1]): return defaultValue
+  return g.get(coords[0], coords[1])
 
 proc width*[T](g: Grid[T]): int =
   assert(validate(g) == true)
